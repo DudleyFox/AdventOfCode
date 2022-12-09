@@ -1,4 +1,4 @@
-import itertools
+
 def readRowsAndColumns():
     rows = []
     columns = []
