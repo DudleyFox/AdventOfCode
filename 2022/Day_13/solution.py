@@ -1,4 +1,6 @@
-
+# 3898 too low
+# 5221
+# 4983
 def readPairs():
     lines = []
     with open('input.txt', 'r') as f:
@@ -16,37 +18,50 @@ def readPairs():
 
 def listify(t):
     if type(t) is list:
-        return t
-    return [t]
+        return (t,False)
+    return ([t],True)
 
-def compare(tup):
-    status, l, r, index = tup
-    if type(l) is int and type (r) is int:
-        # print('ints:', l,r,index)
-        if l < r:
-            return ('valid', l, r, index)
-        elif l > r:
-            return ('invalid', l, r, index)
-        return ('unknown', l, r, index)
-    if type(l) is list and type(r) is list:
-        # print('lists:', l,r,index)
-        for x in range(len(l)):
-            if x > len(r) - 1:
-                return ('invalid', l, r, index)
-            result = compare(('', l[x], r[x], index))
-            if result[0] != 'unknown':
-                return result
-        return ('unknown', l, r, index)
-    tl = listify(l)
-    tr = listify(r)
-    return compare(('', tl, tr, index))
+isInt = lambda x : type(x) is int
+
+def compareInts(l,r, depth):
+    print('ints:', l,r,depth)
+    if l < r:
+        return ('valid', l, r)
+    elif l > r:
+        return ('invalid', l, r)
+    return ('unknown', l, r)
+
+def compare(tup, depth):
+    status, l, r = tup
+    if isInt(l) and isInt(r):
+        return compareInts(l,r,depth)
+    tl,listifiedLeft = listify(l)
+    tr,listifiedRight = listify(r)
+    print(f'lists:\n\t{l}\n\t{r}\n\t{depth}')
+    for x in range(len(tl)):
+        if x > len(tr) - 1:
+            if listifiedRight: # we had to turn an element into a list, so we haven't run out
+                return ('unknown', l, r)
+            else:
+                return ('invalid', l, r)
+        result = compare(('', tl[x], tr[x]), depth+1)
+        if result[0] != 'unknown':
+            return result
+    if depth == 0 or (len(tl) < len(tr) and not listifiedLeft):
+        return ('valid', l, r)
+    else:
+        return ('unknown', l, r)
+   
+    
     
 sum = 0
 if __name__ == '__main__':
     for i,l,r in readPairs():
-        result = compare(('',l,r,i))
+        result = compare(('',l,r), 0)
         print(i, result, l,r)
         if result[0] == 'valid' or result[0] == 'unknown':
-            sum += result[3]
+            sum += i
+        print('**************************')
+        # data = input("Continue?")
             
     print(sum)
