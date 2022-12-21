@@ -3,22 +3,27 @@
 # 4983
 # 5196
 
-import sys
+# 26462 wrong on part 2
+# 22848 wrong on part 2 :(
 
-def readPairs(filename):
+import sys
+import functools
+
+def readPackets(filename):
     lines = []
+    divider1 = [[2]]
+    divider2 = [[6]]
+
+    lines.append(divider1)
+    lines.append(divider2)
+
     with open(filename, 'r') as f:
         for l in f.readlines():
             t = l.strip()
             if t:
-                lines.append(t)
-    length = len(lines)
-    index = 1
-    for x in range(0, length, 2):
-        left = eval(lines[x])
-        right = eval(lines[x+1])
-        yield (index, left, right)
-        index += 1
+                lines.append(eval(t))
+    return lines
+    
 
 def listify(t):
     if type(t) is list:
@@ -43,6 +48,7 @@ def compare(tup, depth):
     tl, leftListified = listify(l)
     tr, rightListified = listify(r)
     index = 0
+    print('lists', tl, tr)
     while index < len(tl):
         if index >= len(tr): # ran out on the right side first
             return ('invalid', l, r)
@@ -56,16 +62,37 @@ def compare(tup, depth):
     if depth == 0:
         return ('valid', l, r)
     return ('unknown', l, r)
+
+def sortCompare(x,y):
+    status, l, r = compare(('',x,y), 0)
+    if status == 'valid':
+        return -1
+    if status == 'invalid':
+        return 1
+    return -1 # default to valid
+
+def isDivider(l, val, index, oldIndex):
+    try:
+        if len(l) == 1 and len(l[0]) == 1 and l[0][0] == val:
+            return index
+        return oldIndex
+    except:
+        return oldIndex
+
     
     
 sum = 0
 if __name__ == '__main__':
-    for i,l,r in readPairs(sys.argv[1]):
-        result = compare(('',l,r), 0)
-        print(i, result, l,r)
-        if result[0] == 'valid' or result[0] == 'unknown':
-            sum += i
-        print('**************************')
-        # data = input("Continue?")
+    packets = readPackets(sys.argv[1])
+    keyFunc = functools.cmp_to_key(sortCompare)
+    sortedPackets = sorted(packets, key=keyFunc)
+
+    divider1Index = 0
+    divider2Index = 0
             
-    print(sum)
+    for x in range(len(sortedPackets)):
+        divider1Index = isDivider(sortedPackets[x], 2, x+1, divider1Index)
+        divider2Index = isDivider(sortedPackets[x], 6, x+1, divider2Index)
+        print(x+1, ':', sortedPackets[x])
+
+    print(divider1Index, divider2Index, divider2Index * divider1Index)
