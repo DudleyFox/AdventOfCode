@@ -1,3 +1,4 @@
+import sys
 
 monkeyNames = [
     'Brass',
@@ -100,12 +101,13 @@ class Monkey:
 if __name__ == '__main__':
     monkeys = {}
     monkeyList = []
-    with open('test-input.txt') as f:
+    with open(sys.argv[1]) as f:
         for m in range(4):
             monkeyList.append(Monkey(f, monkeys))
 
+    rounds = int(sys.argv[2])
     
-    for x in range(20):
+    for x in range(rounds):
         for m in monkeyList:
             m.inspectItems(monkeys)
         print(x)
