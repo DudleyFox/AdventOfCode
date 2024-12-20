@@ -69,7 +69,7 @@ fn printMap(uF: u8) void {
         for (0..dim.y) |y| {
             for (0..dim.x) |x| {
                 const c = antennaMap[x][y];
-                sum += if (c == '#') 1 else 0;
+                sum += if (c != '.') 1 else 0;
                 std.debug.print("{u}", .{c});
             }
             std.debug.print("\n", .{});
@@ -134,25 +134,35 @@ fn buildFrequencyPositions(uniqueFrequencies: u8, allocator: anytype) !Frequenci
     return Frequencies{ .freqs = freqPosse };
 }
 
-fn setAtPos(pos: Position, c: u8) void {
-    std.debug.print("Place {u} at {d},{d}\n", .{ c, pos.x, pos.y });
+fn setAtPos(pos: Position, c: u8) bool {
+    // std.debug.print("Place {u} at {d},{d}\n", .{ c, pos.x, pos.y });
     if (pos.x < 0 or pos.y < 0 or pos.x >= dim.x or pos.y >= dim.y) {
         // we are off the map, so do nothing
-        return;
+        return false;
     }
     const x = i2u(pos.x);
     const y = i2u(pos.y);
     antennaMap[x][y] = c;
+    return true;
 }
 
-fn placeAntinodesForP1P2(pos1: Position, pos2: Position, freq: u8) void {
+fn placeAntinodesForP1P2(pos1: Position, pos2: Position) void {
     const deltaX = pos1.x - pos2.x;
     const deltaY = pos1.y - pos2.y;
-    const antiNode1 = Position{ .x = pos1.x + deltaX, .y = pos1.y + deltaY };
-    const antiNode2 = Position{ .x = pos2.x - deltaX, .y = pos2.y - deltaY };
-    std.debug.print("Placing for {u} p1: {d},{d} p2: {d},{d} delta: {d},{d}\n", .{ freq, pos1.x, pos1.y, pos2.x, pos2.y, deltaX, deltaY });
-    setAtPos(antiNode1, '#');
-    setAtPos(antiNode2, '#');
+    var antiNode = Position{ .x = pos1.x, .y = pos1.y };
+    var carryOn = true;
+    while (carryOn) {
+        antiNode = Position{ .x = antiNode.x + deltaX, .y = antiNode.y + deltaY };
+        carryOn = setAtPos(antiNode, '#');
+    }
+
+    antiNode = Position{ .x = pos2.x, .y = pos2.y };
+    carryOn = true;
+    while (carryOn) {
+        antiNode = Position{ .x = antiNode.x - deltaX, .y = antiNode.y - deltaY };
+        carryOn = setAtPos(antiNode, '#');
+    }
+    // std.debug.print("Placing for {u} p1: {d},{d} p2: {d},{d} delta: {d},{d}\n", .{ freq, pos1.x, pos1.y, pos2.x, pos2.y, deltaX, deltaY });
 }
 
 fn placeAntinodes(frequencies: Frequencies) void {
@@ -161,7 +171,7 @@ fn placeAntinodes(frequencies: Frequencies) void {
             const pos1 = fpos.positions[i];
             for (i + 1..fpos.positions.len) |j| {
                 const pos2 = fpos.positions[j];
-                placeAntinodesForP1P2(pos1, pos2, fpos.freq);
+                placeAntinodesForP1P2(pos1, pos2);
             }
         }
     }
