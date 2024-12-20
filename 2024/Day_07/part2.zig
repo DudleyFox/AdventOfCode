@@ -56,6 +56,14 @@ fn recurseOperators(operatorsNeeded: usize, operators: []u8, length: usize, curr
     return intermediateResult;
 }
 
+fn lexicalConcat(a: u64, b: u64) u64 {
+    const exponent = (std.math.log(u64, 10, b) + 1);
+    const front = a * std.math.pow(u64, 10, exponent);
+    const result = front + b;
+    // // std.debug.print("{} {} {} {}\n", .{ a, b, front, result });
+    return result;
+}
+
 fn apply(equation: Equation, operators: []u8) u64 {
     // std.debug.print("Applying {s} to ", .{operators});
     // printEquation(equation);
@@ -65,6 +73,7 @@ fn apply(equation: Equation, operators: []u8) u64 {
         switch (op) {
             '+' => total = total + operands[i + 1],
             '*' => total = total * operands[i + 1],
+            '|' => total = lexicalConcat(total, operands[i + 1]),
             else => {
                 std.debug.print("Unknown operator {u}\n", .{op});
             },
@@ -92,10 +101,11 @@ fn sumPossibleEquations() !u64 {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-    var allowedOperators = try allocator.alloc(u8, 2);
+    var allowedOperators = try allocator.alloc(u8, 3);
     defer allocator.free(allowedOperators);
     allowedOperators[0] = '+';
     allowedOperators[1] = '*';
+    allowedOperators[2] = '|'; // the website uses ||, but | is finr for my purposes
 
     while (lines.next()) |line| {
         if (line.len > 0) {
