@@ -56,57 +56,31 @@ def tupletize(lines, columnWidths):
     for row in rows:
         # tuple of (operator, width, data)
         # eg ('*', 3, ['332', '453', '89 ']))
-        tuplets.append((row[-2:-1][0], row[-1:][0], row[:-2]))
+        tuplets.append((row[-2:-1][0].strip(), row[-1:][0], row[:-2]))
+
+    return tuplets
 
     
-
-
-
-
-
-
-def transformMathProblems(problemsAsColumns):
+def transformTuples(inputTuples):
     """
-    Take the columnar problems that look like this:
+    Take the tuple data problems that look like this:
+        ('*  ', 3, ['123', ' 45', '  6'])
+        ('+  ', 3, ['328', '64 ', '98 '])
+        ('*  ', 3, [' 51', '387', '215'])
+        ('+  ', 3, ['64 ', '23 ', '314'])
 
-        123 32 .51 64.
-        .45 64 387 23.
-        ..6 98 215 314
-        *   +  *.. +..
-    
-    and turn them into a list of tuples like this
-        (*, [123, .45, ..6])
-        (+, [32, 64, 98])
-        (*, [.51, 387, 215])
-        (+, [64., 23., 314])
     and then run them into a list of tuples like this
         (*, [356, 24, 1])
         (+, [248, 369])
         (*, [175, 581, 32])
         (+, [4, 431, 623])
     """
-    columnCount = len(problemsAsColumns[0])
-    rowList = [[] for x in range(columnCount)]
-
-    for x in problemsAsColumns:
-        columnIndex = 0
-        for y in x:
-            rowList[columnIndex].append(y)
-            columnIndex += 1
-        
-
-    print(rowList)
-    tupleList = []
-    for x in rowList:
-        tupleList.append((x[-1:][0].strip(), x[:-1]))
-    print(tupleList)
-
     finalList = []
 
-    for operation, data in tupleList:
-        newData = [0 for x in data]
+    for operation, width, data in inputTuples:
+        newData = [0 for x in range(width)]
         newDataIndex = 0
-        for i in range(2, -1, -1):
+        for i in range(width-1, -1, -1):
             for d in data:
                 newData[newDataIndex] = combineNumbers(newData[newDataIndex], safeInt(d[i].strip()))
             newDataIndex += 1
@@ -136,8 +110,19 @@ if __name__ == "__main__":
     print(lines)
     columnWidths = getColumnWidths(lines)
     print(columnWidths)
-    t = tupletize(lines, columnWidths)
-    print(t)
+    tuplets = tupletize(lines, columnWidths)
+    for t in tuplets:
+        print(t)
+    finalTuples = transformTuples(tuplets)
+    for f in finalTuples:
+        print(f)
+
+    total = 0
+    for f in finalTuples:
+        total += operate(f)
+
+    print(total)
+
     
 
 
