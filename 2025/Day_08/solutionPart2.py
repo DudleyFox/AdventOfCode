@@ -54,7 +54,7 @@ def getCircuit(circuits, p1, p2):
         return s
 
 
-def buildCircuits(distanceList):
+def buildCircuits(distanceList, points):
     circuits = []
     for distance, p1, p2 in distanceList:
         print("Connecting:", p1, p2)
@@ -75,13 +75,7 @@ if __name__ == "__main__":
         iterations = 10
     points = list(readPoints(sys.argv[1]))
     sortedList = buildDistanceList(points)
-    circuits = buildCircuits(sortedList[:iterations])
-    circuitSizes = [len(x) for x in circuits]
-    circuitSizes.sort(reverse=True)
-    total = 1
-    for x in range(3):
-        total *= circuitSizes[x]
-    print(total)
+    circuits = buildCircuits(sortedList, points)
     
 
 
