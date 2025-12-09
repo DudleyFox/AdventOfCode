@@ -55,12 +55,15 @@ def getCircuit(circuits, p1, p2):
 
 
 def buildCircuits(distanceList, points):
-    circuits = []
+    circuits = [set([x]) for x in points]
     for distance, p1, p2 in distanceList:
         print("Connecting:", p1, p2)
         s = getCircuit(circuits, p1, p2)
         s.add(p1)
         s.add(p2)
+        if len(circuits) == 1:
+            print(p1[0], p2[0], p1[0] * p2[0])
+            break
         print("Connected:", s)
         print()
     return circuits
@@ -69,10 +72,6 @@ def buildCircuits(distanceList, points):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        iterations = int(sys.argv[2])
-    else:
-        iterations = 10
     points = list(readPoints(sys.argv[1]))
     sortedList = buildDistanceList(points)
     circuits = buildCircuits(sortedList, points)
