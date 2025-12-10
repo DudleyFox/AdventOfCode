@@ -2,15 +2,26 @@ import sys
 import math
 
 # first guess: 4613357005 too high
+# second guess: 4613357005
+maxX = 0
+maxY = 0
+minX = 9999999
+minY = 9999999
+reds = set()
 
 def readPoints(filename):
     points = []
+    global maxX, maxY, minX, minY
     with open(filename,'r') as f:
         for l in f.readlines():
             line = l.strip()
             x,y = line.split(",")
             x = int(x)
             y = int(y)
+            maxX = max(x, maxX)
+            minX = min(x, minX)
+            maxY = max(y, maxY)
+            minY = min(y, minY)
             yield(x,y)
 
 
@@ -20,7 +31,29 @@ def calculateArea(p1, p2):
     width = abs(x1-x2) + 1
     height = abs(y1-y2) + 1
     return width * height
-                      
+
+def translatePoints(points):
+    global maxX, maxY, minX, minY
+    newPoints = []
+    for x,y in points:
+        newPoints.append((x-minX, y-minY))
+
+    maxX -= minX
+    maxY -= minY
+    minX = 0
+    minY = 0
+    return newPoints
+
+def buildGrid(pointSet, maxX, maxY):
+    grid = []
+    for y in range(maxY+1):
+        row = ['.'] * (maxX+1)
+        grid.append(row)
+    for x, y in pointSet:
+        grid[y][x] = 'X'
+        if (x,y) in reds:
+            grid[y][x] = '#'
+    return grid
 
 
 def getAreaList(points):
@@ -56,7 +89,9 @@ def addLine(pointSet, p1, p2):
                 pointSet.add((j,y1))
 
 def buildPolygonPointSet(points):
+    global reds
     pointSet = set()
+    reds = set(points)
     firstPoint = points[0]
     lastPoint = points[-1]
     for i in range(len(points) - 1):
@@ -70,18 +105,48 @@ def buildPolygonPointSet(points):
 def fillPolygon(pointSet):
     pass
 
+def compress(pointList, fixed, XorY):
+    # print("Compress Input:", pointList)
+    if XorY == 'X':
+        values = [y[1] for y in pointList]
+    else:
+        values = [x[0] for x in pointList]
+
+    values.sort()
+
+    # print("Compress Values PRE:", values)
+
+    last = -1
+    newValues = []
+    for v in values:
+        if last == -1 or v - last > 1:
+            newValues.append(v)
+        last = v
+
+    # print("Compress Values POST:", newValues)
+    
+    if XorY == 'X':
+        result= [(fixed, v) for v in newValues]
+    else:
+        result= [(v, fixed) for v in newValues]
+    # print("Compress Output:", result) 
+    return result
+
+
 def isPointInPolygon(pointSet, p):
     # print("Testing:", p)
     if p in pointSet:
         return True
     x,y = p
-    xPoints = [p for p in pointSet if p[0] == x]
-    yPoints = [p for p in pointSet if p[1] == y]
+    xPoints = [k for k in pointSet if k[0] == x]
+    yPoints = [k for k in pointSet if k[1] == y]
+    xPoints = compress(xPoints, x, 'X')
+    yPoints = compress(yPoints, y, 'Y')
     # print(p, xPoints, yPoints)
-    oneAbove = len([p for p in xPoints if p[1] <= y]) > 0
-    oneBelow = len([p for p in xPoints if p[1] >= y]) > 0
-    oneLeft = len([p for p in yPoints if p[0] <= x]) > 0
-    oneRight = len([p for p in yPoints if p[0] >= x]) > 0
+    oneAbove = len([p for p in xPoints if p[1] < y]) % 2 == 1
+    oneBelow = len([p for p in xPoints if p[1] > y]) % 2 == 1
+    oneLeft = len([p for p in yPoints if p[0] < x]) % 2 == 1
+    oneRight = len([p for p in yPoints if p[0] > x]) % 2 == 1
     # print("Above:", oneAbove, "Below:", oneBelow, "Right:", oneRight, "Left:", oneLeft)
     return oneAbove and oneBelow and oneLeft and oneRight
 
@@ -96,13 +161,21 @@ def isInPolygon(pointSet, p1,p2):
         
     # print(pointSet)
     return True
+
+def printGrid(grid):
+    for y in grid:
+        for x in y:
+            print(x, end='')
+        print()
            
 if __name__ == "__main__":
     points = list(readPoints(sys.argv[1]))
+    #points = translatePoints(points)
     areas = getAreaList(points)
     pointSet = buildPolygonPointSet(points)
-    for a in areas:
-        area, p1, p2 = a
+    #grid = buildGrid(pointSet, maxX, maxY)
+    #printGrid(grid)
+    for area, p1, p2 in areas:
         if isInPolygon(pointSet, p1, p2):
             print(area)
             exit(0)
