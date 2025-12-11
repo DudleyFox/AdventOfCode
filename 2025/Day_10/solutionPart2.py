@@ -51,19 +51,16 @@ class Diagram:
         while True:
             buttonsToTest = generate(self.buttons, index)
             result = self.applyButtons(buttonsToTest)
-            if compareLists(result, self.lights):
+            if compareLists(result, self.joltages):
                 return buttonsToTest
             index += 1
 
     def applyButtons(self, buttons):
-        lights = ['.'] * len(self.lights)
+        joltages = [0] * len(self.joltages)
         for button in buttons:
             for i in button:
-                if lights[i] == '.':
-                    lights[i] = '#'
-                else:
-                    lights[i] = '.'
-        return lights
+                joltages[i] += 1
+        return joltages
 
 
 def readDiagrams(filename):
@@ -82,6 +79,7 @@ if __name__ == "__main__":
     for d in diagrams:
         sequence = d.findButtonSequence()
         total = total + len(sequence)
+        print()
         print(total, sequence)
     
 
