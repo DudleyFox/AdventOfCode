@@ -2,23 +2,6 @@ import sys
 import math
 
 
-def generate(elements, index):
-    tIndex = index
-    length = len(elements)
-    result = []
-    while tIndex > -1:
-        s = elements[tIndex % length]
-        result.append(s)
-        tIndex = tIndex // length
-        tIndex -= 1
-    return result
-
-def compareLists(l1, l2):
-    for i in range(len(l1)):
-        if l1[i] != l2[i]:
-            return False
-    return len(l1) == len(l2)
-
 class Diagram:
     
     def __init__(self, lineToParse):
@@ -35,6 +18,32 @@ class Diagram:
                 self.joltages = [int(x) for x in d[1:-1].split(",")]
             else:
                 raise "Unrecognized Diagram"
+        self.transformButtons()
+
+
+    def transformButtons(self):
+        # the buttons as written are the number of the joltage that
+        # is incremented, for example (0,2,5). We can transform that
+        # to [1,0,1,0,0,1] assuming we have 6 joltages. Then it just becomes
+        # a math problem
+        # for instance from the test in input we have
+        #     [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
+        # we can turn that into
+        #   1x + 0y + 1z + 1v + 0w + -7 = 0
+        #   0x + 0y + 0z + 1v + 1w + -5 = 0
+        #   1x + 1y + 0z + 1v + 1w + -12 = 0
+        #   1x + 1y + 0z + 0v + 1w + -7 = 0
+        #   1x + 0y + 1z + 0v + 1w + -2 = 0
+        #
+        # Now I just need to write the program for that...
+
+        newButtons = []
+        for b in self.buttons:
+            template = [0 for x in self.joltages]
+            for x in b:
+                template[x] = 1
+            newButtons.append(tuple(template))
+        self.buttons = newButtons
 
     def __str__(self):
         s = []
@@ -77,10 +86,7 @@ if __name__ == "__main__":
 
     total = 0
     for d in diagrams:
-        sequence = d.findButtonSequence()
-        total = total + len(sequence)
-        print()
-        print(total, sequence)
+        print(d)
     
 
 
