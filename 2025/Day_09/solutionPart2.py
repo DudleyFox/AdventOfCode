@@ -3,11 +3,14 @@ import math
 
 # first guess: 4613357005 too high
 # second guess: 4613357005
+
 maxX = 0
 maxY = 0
 minX = 9999999
 minY = 9999999
 reds = set()
+xPointsCache = {}
+yPointsCache = {}
 
 def readPoints(filename):
     points = []
@@ -132,16 +135,29 @@ def compress(pointList, fixed, XorY):
     # print("Compress Output:", result) 
     return result
 
+def getXPoints(pointSet, x):
+    if x in xPointsCache:
+        return xPointsCache[x]
+    xPoints = [k for k in pointSet if k[0] == x]
+    xPoints = compress(xPoints, x, 'X')
+    xPointsCache[x] = xPoints
+    return xPoints
+
+def getYPoints(pointSet, y):
+    if y in yPointsCache:
+        return yPointsCache[y]
+    yPoints = [k for k in pointSet if k[1] == y]
+    yPoints = compress(yPoints, y, 'Y')
+    yPointsCache[y] = yPoints
+    return yPoints
 
 def isPointInPolygon(pointSet, p):
     # print("Testing:", p)
     if p in pointSet:
         return True
     x,y = p
-    xPoints = [k for k in pointSet if k[0] == x]
-    yPoints = [k for k in pointSet if k[1] == y]
-    xPoints = compress(xPoints, x, 'X')
-    yPoints = compress(yPoints, y, 'Y')
+    xPoints = getXPoints(pointSet, x)
+    yPoints = getYPoints(pointSet, y)
     # print(p, xPoints, yPoints)
     oneAbove = len([p for p in xPoints if p[1] < y]) % 2 == 1
     oneBelow = len([p for p in xPoints if p[1] > y]) % 2 == 1
@@ -151,10 +167,10 @@ def isPointInPolygon(pointSet, p):
     return oneAbove and oneBelow and oneLeft and oneRight
 
 def isInPolygon(pointSet, p1,p2):
-    # print("*************\nTesting", p1, p2)
+    print("Testing", p1, p2)
     p3 = (p1[0], p2[1])
     p4 = (p2[0], p1[1])
-    toTest = [p1,p2,p3,p4]
+    toTest = buildPolygonPointSet([p1,p2,p3,p4])
     for p in toTest:
         if not isPointInPolygon(pointSet, p):
             return False
