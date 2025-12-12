@@ -24,19 +24,7 @@ class Diagram:
     def transformButtons(self):
         # the buttons as written are the number of the joltage that
         # is incremented, for example (0,2,5). We can transform that
-        # to [1,0,1,0,0,1] assuming we have 6 joltages. Then it just becomes
-        # a math problem
-        # for instance from the test in input we have
-        #     [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
-        # we can turn that into
-        #   1x + 0y + 1z + 1v + 0w + -7 = 0
-        #   0x + 0y + 0z + 1v + 1w + -5 = 0
-        #   1x + 1y + 0z + 1v + 1w + -12 = 0
-        #   1x + 1y + 0z + 0v + 1w + -7 = 0
-        #   1x + 0y + 1z + 0v + 1w + -2 = 0
-        #
-        # Now I just need to write the program for that...
-
+        # to [1,0,1,0,0,1] assuming we have 6 joltages. 
         newButtons = []
         for b in self.buttons:
             template = [0 for x in self.joltages]

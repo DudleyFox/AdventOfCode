@@ -9,6 +9,17 @@ buttons = [
 
 joltages = (7,5,12,7,2)
 
+buttons = [
+    (0,0,0,1),
+    (0,1,0,1),
+    (0,0,1,0),
+    (0,0,1,1),
+    (1,0,1,0),
+    (1,1,0,0),
+]
+
+joltages = [3,5,4,7]
+
 rotation = []
 for x in range(len(joltages)):
     rotation.append([])
