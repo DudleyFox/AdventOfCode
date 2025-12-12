@@ -84,27 +84,29 @@ def placeShape(grid, shape, xOffset, yOffset):
     printGrid(grid)
 
 def canPlace(grid, present, x, y):
-    if not collision(grid, v, x, y):
-        placeShape(grid, v, x, y)
+    if not collision(grid, present, x, y):
+        placeShape(grid, present, x, y)
         return True
     return False
 
 
 def canFit(grid, counts, presents):
     cLen = len(counts)
-    total = 0:
+    yLen = len(grid)
+    xLen = len(grid[0])
+    total = 0
     for c in counts:
         total += c
     if total == 0:
-        return true;
+        return True;
     for i in range(cLen):
         currentCount = counts[i]
         if currentCount > 0:
             newGrid = cloneGrid(grid)
             for y in range(0, yLen - 2):
                 for x in range(0, xLen - 2):
-                    for v in present.variants:
-                        if canPlace(newGrid, presents[i], x, y):
+                    for v in presents[i].variants:
+                        if canPlace(newGrid, v, x, y):
                             newCounts = [c for c in counts]
                             newCounts[i] -= 1
                             return canFit(newGrid, newCounts, presents)
