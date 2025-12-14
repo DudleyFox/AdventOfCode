@@ -1,5 +1,5 @@
 import sys
-import math
+import time
 
 def buildGrid(x,y):
     return [['.']*x for i in range(y)]
@@ -7,9 +7,17 @@ def buildGrid(x,y):
 def cloneGrid(grid):
     return[[x for x in y] for y in grid]
 
-def printGrid(grid):
+def printGrid(grid, lastShape, counts, depth):
+    time.sleep(0.5)
+    print(chr(27) + "[0;0f") # move to top of the screen
+    print(counts, depth)
     for y in grid:
         print("".join(y))
+    if lastShape:
+        print()
+        print('=================')
+        for y in lastShape:
+            print("".join(y))
 
 def rotate90(shape):
     # from https://stackoverflow.com/a/53895686
@@ -70,9 +78,7 @@ def collision(grid, shape, xOffset, yOffset):
                 return True
     return False
     
-def placeShape(grid, shape, xOffset, yOffset):
-    printGrid(grid)
-    printGrid(shape)
+def placeShape(grid, shape, xOffset, yOffset, counts, depth):
     yLen = len(shape)
     xLen = len(shape[0])
     for y in range(yLen):
@@ -80,17 +86,16 @@ def placeShape(grid, shape, xOffset, yOffset):
             c = shape[y][x]
             if c == '#':
                 grid[y+yOffset][x+xOffset] = c
-    print("*"*32)
-    printGrid(grid)
+    printGrid(grid, shape, counts, depth)
 
-def canPlace(grid, present, x, y):
+def canPlace(grid, present, x, y, counts, depth):
     if not collision(grid, present, x, y):
-        placeShape(grid, present, x, y)
+        placeShape(grid, present, x, y, counts, depth)
         return True
     return False
 
 
-def canFit(grid, counts, presents):
+def canFit(grid, counts, presents, depth=0):
     cLen = len(counts)
     yLen = len(grid)
     xLen = len(grid[0])
@@ -106,10 +111,11 @@ def canFit(grid, counts, presents):
             for y in range(0, yLen - 2):
                 for x in range(0, xLen - 2):
                     for v in presents[i].variants:
-                        if canPlace(newGrid, v, x, y):
+                        if canPlace(newGrid, v, x, y, counts, depth):
                             newCounts = [c for c in counts]
                             newCounts[i] -= 1
-                            return canFit(newGrid, newCounts, presents)
+                            if canFit(newGrid, newCounts, presents, depth + 1):
+                                return True
     return False
 
 class FirGrid:
@@ -182,12 +188,9 @@ def readPresentsAndGrids(filename):
 
 if __name__ == "__main__":
     presents, grids = readPresentsAndGrids(sys.argv[1])
-    for p in presents:
-        print(presents[p])
-        print()
     total = 0
+    print(chr(27) + "[2J") # clear the screen
     for g in grids:
-        print(g)
         grid = buildGrid(g.x, g.y)
         if (g.canFit()):
             total += 1
